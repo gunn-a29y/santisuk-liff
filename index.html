@@ -161,7 +161,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.3</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.4</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -309,7 +309,7 @@
     el('list').innerHTML = '<div class="empty">กำลังโหลด…</div>';
     api('getMonth',{month:MONTHS[MIDX]}).then(function(d){ DATA=d; render(); }).catch(fail);
   }
-  function thMonth(ym){ if(!ym) return '—'; var p=ym.split('-'), m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return (m[+p[1]]||p[1])+' '+(+p[0]+543); }
+  function thMonth(ym){ if(!ym) return '—'; var p=String(ym).split('-'); if(isNaN(+p[0])||!p[1]) return String(ym); var m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return (m[+p[1]]||p[1])+' '+(+p[0]+543); }
 
   function renderChips(){
     el('chips').innerHTML = FILTERS.map(function(f){ return '<button class="chip'+(f.key===FILTER?' on':'')+'" onclick="setFilter(\''+f.key+'\')">'+f.label+'</button>'; }).join('');
@@ -343,7 +343,7 @@
     var sc = STATUS_CLASS[b.status] || 'todo';
     var paid = b.payStatus==='จ่ายแล้ว';
     var thumb = b.photoUrl ? '<div class="thumb" style="background-image:url('+esc(b.photoUrl)+')"></div>' : '<div class="thumb">'+RECEIPT_ICON+'</div>';
-    return '<div class="card">'+
+    return '<div class="card" onclick="openQS(\''+esc(b.billId)+'\')" style="cursor:pointer">'+
       '<div class="strip '+sc+'">'+
         '<div><span class="tag"><span class="dot"></span> '+esc(b.status||'ยังไม่ทำ')+'</span>'+
           '<div class="sup">'+esc(b.supplier||'(ไม่ระบุผู้ขาย)')+'</div>'+
