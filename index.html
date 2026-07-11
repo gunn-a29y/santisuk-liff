@@ -30,7 +30,7 @@
   .logoname{ font-size:26px; font-weight:700; }
   .plus{ font-size:22px; font-weight:700; color:var(--lime); margin-top:1px; }
   .greet{ font-size:16px; color:#D8E3FA; margin-top:8px; }
-  .seg{ display:flex; background:rgba(255,255,255,.15); border-radius:999px; padding:5px; margin-top:16px; }
+  .seg{ display:flex; background:rgba(255,255,255,.15); border-radius:999px; padding:5px; margin-top:16px; position:relative; z-index:58; }  /* z58 = เหนือ backdrop เมนู(55) แต่ต่ำกว่ากล้อง/confirm(80/81) → แตะแท็บทีเดียวได้แม้เมนูเปิด */
   .seg button{ flex:1; border:0; background:none; color:rgba(255,255,255,.88); font-size:17px;
     padding:12px 0; border-radius:999px; font-family:inherit; font-weight:400; }
   .seg button.on{ background:#fff; color:var(--blue); font-weight:700; }
@@ -90,7 +90,7 @@
   @keyframes shim{ to{ transform:translateX(100%); } }
 
   /* camera overlay */
-  .cam{ position:fixed; inset:0; background:#0E1525; z-index:50; display:flex; flex-direction:column; }
+  .cam{ position:fixed; inset:0; background:#0E1525; z-index:80; display:flex; flex-direction:column; }
   .camtop{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; color:#fff; font-size:18px; font-weight:700; }
   .camtop button{ background:none; border:0; color:#fff; font-size:24px; font-family:inherit; }
   .camwrap{ flex:1; position:relative; overflow:hidden; }
@@ -108,7 +108,7 @@
   .shutter{ width:76px; height:76px; border-radius:50%; background:#fff; border:5px solid rgba(255,255,255,.45); }
 
   /* confirm captured */
-  .confirm{ position:fixed; inset:0; background:#0E1525; z-index:51; display:flex; flex-direction:column; }
+  .confirm{ position:fixed; inset:0; background:#0E1525; z-index:81; display:flex; flex-direction:column; }
   .shotwrap{ flex:1; min-height:0; padding:14px 22px; display:flex; align-items:center; justify-content:center; }
   .shotwrap img{ max-width:100%; max-height:100%; border-radius:10px; }
   .consheet{ flex-shrink:0; background:#fff; border-radius:24px 24px 0 0; padding:18px 18px 26px; }
@@ -175,7 +175,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.1.3</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.1.4</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -465,6 +465,7 @@
 
   // ---------- tabs ----------
   function showTab(t){
+    closePopup();                                          // แตะแท็บขณะเมนูเปิด = ปิดเมนู + สลับ ทีเดียว
     el('t-manage').classList.toggle('on', t==='manage');
     el('t-all').classList.toggle('on', t==='all');
     el('tab-manage').classList.toggle('hidden', t!=='manage');
