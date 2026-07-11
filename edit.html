@@ -148,12 +148,20 @@
   // Pages = origin จริง (ไม่ใช่ HtmlService iframe) → liff.init ทำงานได้ → รอ init เพื่อเอา ID token ก่อนเรียก api
   boot();
   async function boot(){
-    try{
-      await liff.init({ liffId: LIFF_ID });
-      ID_TOKEN = liff.getIDToken() || '';
-    }catch(e){ return fail('เชื่อมต่อ LINE ไม่สำเร็จ: ' + (e&&e.message||e)); }
-    if(!ID_TOKEN) return fail('ยังไม่ได้เข้าระบบ LINE — เปิดจากในไลน์เท่านั้นน้า');
+    try{ await liff.init({ liffId: LIFF_ID }); }
+    catch(e){ return authFail('เปิด LINE ไม่สำเร็จ (init): ' + (e&&e.message||e)); }
+    ID_TOKEN = liff.getIDToken() || '';
+    if(!ID_TOKEN) return authFail(authDiag());
     api('getDraft',{billId:BILL_ID}).then(load).catch(fail);
+  }
+  function authDiag(){
+    var s = 'ยังไม่ได้รับบัตร (ID token) จาก LINE';
+    try{ s += ' · inClient=' + liff.isInClient() + ' · loggedIn=' + liff.isLoggedIn(); }catch(e){ s += ' · (state: ' + e + ')'; }
+    return s;
+  }
+  function reLogin(){ try{ liff.login(); }catch(e){ alert('login ไม่ได้: ' + e); } }
+  function authFail(msg){
+    el('loading').innerHTML = '<div style="white-space:pre-line">🔒 '+esc(msg)+'</div><br><button onclick="reLogin()" style="background:#0948B4;color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:16px;font-family:inherit;font-weight:700">เข้าสู่ระบบ LINE ใหม่</button>';
   }
   function fail(e){ el('loading').textContent = 'โหลดไม่สำเร็จ: ' + (e && e.message || e); }
 

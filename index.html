@@ -276,14 +276,23 @@
   if(deepParam('tab') === 'manage'){ showTab('manage'); if(deepParam('cam') === '1') startCamera(); }
   boot();
   async function boot(){
-    try{
-      await liff.init({ liffId: LIFF_ID });
-      ID_TOKEN = liff.getIDToken() || '';
-    }catch(e){ return authFail('เชื่อมต่อ LINE ไม่สำเร็จ: ' + (e&&e.message||e)); }
-    if(!ID_TOKEN) return authFail('ยังไม่ได้เข้าระบบ LINE — เปิดแอปนี้จากในไลน์เท่านั้นน้า');
+    try{ await liff.init({ liffId: LIFF_ID }); }
+    catch(e){ return authFail('เปิด LINE ไม่สำเร็จ (init): ' + (e&&e.message||e), true); }
+    ID_TOKEN = liff.getIDToken() || '';
+    if(!ID_TOKEN) return authFail(authDiag(), true);        // ไม่มีบัตร → โชว์สาเหตุ + ปุ่ม login ใหม่
     api('listMonths').then(initMonths).catch(fail);
   }
-  function authFail(msg){ el('greet').textContent = 'เปิดจากในแอป LINE'; el('list').innerHTML = '<div class="empty">🔒 '+esc(msg)+'</div>'; }
+  function authDiag(){
+    var s = 'ยังไม่ได้รับบัตร (ID token) จาก LINE';
+    try{ s += ' · inClient=' + liff.isInClient() + ' · loggedIn=' + liff.isLoggedIn(); }catch(e){ s += ' · (อ่าน state ไม่ได้: ' + e + ')'; }
+    return s;
+  }
+  function reLogin(){ try{ liff.login(); }catch(e){ alert('login ไม่ได้: ' + e); } }
+  function authFail(msg, showLogin){
+    el('greet').textContent = 'ยังเข้าระบบ LINE ไม่ได้';
+    var btn = showLogin ? '<br><br><button onclick="reLogin()" style="background:#0948B4;color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:16px;font-family:inherit;font-weight:700">เข้าสู่ระบบ LINE ใหม่</button>' : '';
+    el('list').innerHTML = '<div class="empty" style="white-space:pre-line">🔒 '+esc(msg)+btn+'</div>';
+  }
   function fail(e){ el('list').innerHTML = '<div class="empty">โหลดไม่สำเร็จ<br>'+esc(e&&e.message||e)+'</div>'; }
 
   function initMonths(months){
@@ -441,7 +450,7 @@
   // camera = native input (webview LINE บล็อก getUserMedia overlay) · เรียกใน tap จริง = click() ผ่าน
   function retake(){ el('confirm').classList.add('hidden'); CUR_SHOT=null; if(SHOT_SRC==='gallery'){ pickGallery(); } else { pickFile(); } }
   function useShot(){
-    if(!ID_TOKEN){ errPopup('ยังเชื่อมต่อ LINE ไม่เสร็จ รอแป๊บแล้วลองใหม่น้า'); return; }
+    if(!ID_TOKEN){ popup({ html:'<div class="pop-ic warn">🔒</div><div class="pop-t">ยังเข้าระบบ LINE ไม่เสร็จ</div><div class="pop-b">'+esc(authDiag())+'</div>', buttons:[{label:'เข้าสู่ระบบ LINE',cls:'blue',onclick:'reLogin()'}] }); return; }
     el('confirm').classList.add('hidden');
     popup({ ic:'load', html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">น้องกำลังอ่านบิล…</div><div class="pop-b">รอแป๊บนึงน้า กำลังพิมพ์ชื่อยากับราคาให้ค้าบ</div>' });
     api('parseBill',{dataUrl:CUR_SHOT}).then(function(r){
