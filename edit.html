@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!-- Edit.html — LIFF หน้าตรวจ/แก้บิล (flow B · AI เติมให้ · เปิดทุกครั้ง) · unit dropdown + popup · TQ-99 -->
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css">
+<style>
+  :root{ --blue:#0948B4; --lime:#AEE63F; --bg:#F2F5FA; --card:#fff; --ink:#15233B; --muted:#7E8AA0;
+    --line:#E2E7F0; --green:#16A34A; --amber:#D97706; --red:#DC2626; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; overflow-x:hidden; background:var(--bg); color:var(--ink); font-size:17px;
+    font-family:'LINE Seed Sans TH','Anuphan',-apple-system,'Noto Sans Thai',sans-serif; }
+  .hidden{ display:none !important; }
+  .top{ display:flex; align-items:center; justify-content:space-between; background:var(--blue); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:5; }
+  .top .t{ font-size:19px; font-weight:700; }
+  .top button{ background:none; border:0; color:#fff; font-family:inherit; }
+  .top .back{ font-size:24px; }
+  .photochip{ display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.18); font-size:15px; padding:8px 13px; border-radius:999px; }
+  .photochip svg{ width:17px; height:17px; }
+  .wrap{ padding:16px 14px 110px; }
+  .hello{ background:#EAF1FF; border:1px solid #D5E3FB; border-radius:14px; padding:14px 15px; display:flex; gap:11px; margin-bottom:18px; }
+  .hello .ic{ width:34px; height:34px; flex:none; border-radius:50%; background:var(--lime); color:#33500A; display:flex; align-items:center; justify-content:center; }
+  .hello .ic svg{ width:19px; height:19px; }
+  .hello .tx{ font-size:15px; color:#2C3A52; line-height:1.5; }
+  .sec{ font-size:18px; font-weight:700; color:#28324A; margin:4px 0 13px; }
+  label{ display:block; font-size:15px; color:#6B7689; margin:13px 0 7px; }
+  input,select{ width:100%; height:54px; border:1.5px solid var(--line); border-radius:13px; padding:0 15px; font-size:18px; color:var(--ink); background:#fff; font-family:inherit; }
+  input::placeholder{ color:#AEB6C4; }
+  .row2{ display:flex; gap:10px; } .row2>div{ flex:1; min-width:0; }
+  .selwrap{ position:relative; } .selwrap>svg{ position:absolute; right:14px; top:50%; transform:translateY(-50%); width:20px; height:20px; color:#7B879B; pointer-events:none; }
+  select{ appearance:none; -webkit-appearance:none; padding-right:42px; }
+  .banner{ padding:12px 14px; border-radius:12px; font-size:15px; margin:12px 0 4px; line-height:1.5; }
+  .banner.warn{ background:#FCEFC7; color:#8A5304; } .banner.ok{ background:#E9F9EF; color:#15803D; }
+  .item{ background:#F8FAFC; border:1px solid #E9EDF4; border-radius:16px; padding:15px; margin-bottom:13px; position:relative; }
+  .item .del{ position:absolute; top:10px; right:12px; color:var(--red); background:none; border:0; font-size:22px; line-height:1; font-family:inherit; }
+  .item label:first-child{ margin-top:0; }
+  .free{ display:inline-block; background:#FCEFC7; color:#8A5304; font-size:13px; padding:2px 9px; border-radius:999px; margin-left:6px; }
+  .cond{ background:#F3FBE6; border:1px solid #D7EFA8; border-radius:12px; padding:11px 13px; margin-top:12px; }
+  .cond label{ margin-top:0; color:#5E7A1E; }
+  .cond input{ background:#fff; }
+  .readonly{ background:#F1F4F8; color:#5A6577; }
+  .addbtn{ width:100%; height:52px; border:1.5px dashed #BBC6D8; background:#fff; border-radius:13px; color:#3F4A60; font-size:17px; font-weight:700; font-family:inherit; }
+  .savebar{ position:fixed; left:0; right:0; bottom:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom)); background:#fff; box-shadow:0 -2px 10px rgba(0,0,0,.06); }
+  .savebar button{ width:100%; max-width:560px; margin:0 auto; display:block; height:58px; border:0; border-radius:15px; background:var(--blue); color:#fff; font-size:20px; font-weight:700; font-family:inherit; }
+  .savebar button:disabled{ background:#A9B6CC; }
+  .savebar .delLink{ height:auto; background:none; color:var(--red); font-size:15px; font-weight:400; margin-top:9px; text-decoration:underline; text-underline-offset:3px; }
+  .loadmsg{ color:var(--muted); font-size:16px; text-align:center; padding:40px 10px; }
+
+  .pop-bd{ position:fixed; inset:0; background:rgba(9,30,80,.5); z-index:60; display:flex; align-items:center; justify-content:center; padding:26px; }
+  .pop{ background:#fff; border-radius:24px; padding:24px 22px 22px; width:340px; max-width:100%; text-align:center; }
+  .pop-ic{ width:66px; height:66px; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:32px; overflow:hidden; }
+  .pop-ic svg{ width:34px; height:34px; }
+  .pop-ic.ok{ background:#E9F9EF; color:var(--green); } .pop-ic.warn{ background:#FCEFC7; color:#B45309; } .pop-ic.load{ background:#EDF3FF; color:var(--blue); } .pop-ic.del{ background:#FEE2E2; color:var(--red); }
+  .pop-t{ font-size:21px; font-weight:700; color:#1A2740; margin-bottom:9px; }
+  .pop-b{ font-size:15px; color:#6B7689; line-height:1.6; margin-bottom:21px; }
+  .pop-img{ width:100%; border-radius:12px; margin-bottom:6px; }
+  .pop-row{ display:flex; gap:11px; }
+  .pop-btn{ flex:1; height:54px; border-radius:15px; font-size:18px; font-weight:700; font-family:inherit; border:0; }
+  .pop-btn.ghost{ background:#fff; color:#3F4A60; border:1.5px solid #D7DEEA; } .pop-btn.blue{ background:var(--blue); color:#fff; } .pop-btn.red{ background:var(--red); color:#fff; }
+  .spin{ width:30px; height:30px; border:3px solid #CBD8F5; border-top-color:var(--blue); border-radius:50%; animation:sp .8s linear infinite; }
+  @keyframes sp{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="top">
+  <button class="back" onclick="goHome()">‹</button>
+  <span class="t">ตรวจบิล</span>
+  <button class="photochip" onclick="viewPhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>ดูรูปบิล</button>
+</div>
+
+<div class="wrap">
+  <div class="loadmsg" id="loading">กำลังโหลดข้อมูลบิล…</div>
+  <div id="form" class="hidden">
+    <div class="hello">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="tx">น้องอ่านบิลให้แล้วค้าบ~ ตรวจดูหน่อยน้า<br>ตรงไหนน้องพิมพ์ผิด แตะแก้ได้เลย</div>
+    </div>
+
+    <div class="sec">หัวบิล</div>
+    <label>ผู้ขาย</label><input id="supplier" placeholder="ใครส่งของมา">
+    <label>ประเภทเอกสาร</label>
+    <div class="selwrap"><select id="docType" onchange="checkDocType()"></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div id="docWarn" class="banner warn hidden">เอ๊ะ ใบนี้ไม่ใช่ "ใบกำกับภาษี" นะ — ตรวจให้ชัวร์ก่อนบันทึก</div>
+    <div class="row2">
+      <div><label>วันที่บิล</label><input id="invoiceDate" type="date"></div>
+      <div><label>เลขที่ใบกำกับ</label><input id="taxInvoiceNo" placeholder="เลขหัวบิล"></div>
+    </div>
+    <div class="row2">
+      <div><label>เลขใบสั่งซื้อ (PO)</label><input id="poNumber" placeholder="ถ้ามี"></div>
+      <div><label>วิธีคิดภาษี</label><div class="selwrap"><select id="taxMode"></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+    </div>
+    <div class="row2">
+      <div><label>ส่วนลดท้ายบิล</label><input id="billDiscount" type="number" inputmode="decimal" placeholder="0" oninput="recon()"></div>
+      <div><label>ยอดรวมสุทธิทั้งใบ</label><input id="netTotal" type="number" inputmode="decimal" placeholder="ยอดในบิล" oninput="recon()"></div>
+    </div>
+
+    <div class="sec" style="margin-top:20px">รายการยา</div>
+    <div id="reconBanner" class="banner"></div>
+    <div id="items"></div>
+    <button class="addbtn" onclick="addItem()">+ เพิ่มรายการ</button>
+
+    <div class="sec" style="margin-top:20px">สถานะ</div>
+    <div class="row2">
+      <div><label>สถานะงาน</label><div class="selwrap"><select id="status"></select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div><label>เครดิต (วัน)</label><input id="credit" type="number" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <p style="color:var(--muted);font-size:14px;line-height:1.5;margin-top:10px">เรื่องเงิน (ค้างชำระ / จ่ายแล้ว) ค่อยติ๊กทีหลังในหน้า "บิลทั้งหมด" ได้น้า — เริ่มต้นเป็น "ค้างชำระ"</p>
+  </div>
+</div>
+
+<div class="savebar"><button id="saveBtn" onclick="save()" disabled>บันทึกบิล</button>
+<button class="delLink" onclick="delBill()">ลบบิลนี้ทั้งใบ</button></div>
+<div id="popupRoot"></div>
+
+<script src="https://static.line-scdn.net/liff/edit/2/sdk.js"></script>
+<script>
+  var LIFF_ID = '2010669250-NflL6kvi';
+  var EXEC_URL = 'https://script.google.com/macros/s/AKfycbzncTK16uWRlsbYsZWELaWLLTQ_OlDYnjoVd4zESWAkE-dIzFffwt77u3b6TXYSz0Z1/exec';
+  var ID_TOKEN = '';                                              // LINE ID token — ตั้งตอน boot, แนบทุก api call (TQ-143 auth ทาง A)
+  // เลขบิลมาจาก ?bill= (หรือซ้อนใน liff.state ถ้ามาจาก deep-link ภายนอก)
+  var BILL_ID = (function(){ var p=new URLSearchParams(location.search); if(p.get('bill')) return p.get('bill');
+    var s=p.get('liff.state'); if(s) return new URLSearchParams(s.replace(/^\?/,'')).get('bill')||''; return ''; })();
+  var DOC_TYPES = ['ใบกำกับภาษี','ใบเสนอราคา','ใบส่งของ','ใบเสร็จชั่วคราว','ใบฝากของ','อื่นๆ'];
+  var TAX_MODES = ['รวมภาษี','ไม่รวมภาษี','ไม่มีภาษี'];
+  var STATUSES  = ['ยังไม่ทำ','ทำแล้ว','ต้องแก้'];
+  var UNITS     = ['กล่อง','แพ็ก','เม็ด','แผง','โหล','กระปุก','ขวด','อื่นๆ'];
+  var CONTAINER = { 'กล่อง':1,'แพ็ก':1,'โหล':1,'กระปุก':1,'ขวด':1 };   // หน่วยที่ถามต่อว่า "บรรจุกี่..."
+  var UNIT_OPTS = UNITS.map(function(u){ return '<option>'+u+'</option>'; }).join('');
+  var PHOTO_URL = '', PENDING = null, SAVED_ID = '', PAY_STATUS = 'ค้างชำระ', IS_SAVED = false;
+
+  function el(id){ return document.getElementById(id); }
+  function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function opt(id,arr){ el(id).innerHTML = arr.map(function(v){return '<option>'+v+'</option>';}).join(''); }
+  // เรียก backend (Apps Script /exec) — fetch text/plain เลี่ยง CORS preflight + redirect follow (302) + แนบ ID token
+  function api(action, args){
+    var payload = { action: action, idToken: ID_TOKEN };
+    for(var k in (args||{})){ payload[k] = args[k]; }
+    return fetch(EXEC_URL, { method:'post', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload), redirect:'follow' })
+      .then(function(res){ return res.json(); })
+      .then(function(j){ if(j && j.ok) return j.data; throw new Error((j && (j.error||j.reason)) || 'error'); });
+  }
+
+  if(!BILL_ID){ document.querySelector('.delLink').style.display='none'; }   // เปิดหน้าโดยไม่มีเลขบิล = ไม่มีอะไรให้ลบ
+  opt('docType',DOC_TYPES); opt('taxMode',TAX_MODES); opt('status',STATUSES);
+  // Pages = origin จริง (ไม่ใช่ HtmlService iframe) → liff.init ทำงานได้ → รอ init เพื่อเอา ID token ก่อนเรียก api
+  boot();
+  async function boot(){
+    try{
+      await liff.init({ liffId: LIFF_ID });
+      ID_TOKEN = liff.getIDToken() || '';
+    }catch(e){ return fail('เชื่อมต่อ LINE ไม่สำเร็จ: ' + (e&&e.message||e)); }
+    if(!ID_TOKEN) return fail('ยังไม่ได้เข้าระบบ LINE — เปิดจากในไลน์เท่านั้นน้า');
+    api('getDraft',{billId:BILL_ID}).then(load).catch(fail);
+  }
+  function fail(e){ el('loading').textContent = 'โหลดไม่สำเร็จ: ' + (e && e.message || e); }
+
+  function load(d){
+    if(!d){ el('loading').textContent = 'ไม่พบข้อมูลบิล — ถ่ายใหม่อีกครั้งน้า'; return; }
+    el('loading').classList.add('hidden'); el('form').classList.remove('hidden');
+    PHOTO_URL = d._photoUrl || '';
+    PAY_STATUS = d.payStatus || 'ค้างชำระ';               // บิลเซฟแล้ว: เก็บค่าเดิม ไม่รีเซ็ตตอนเซฟซ้ำ
+    IS_SAVED = !!d._saved;
+    el('docType').value = d.docType || 'อื่นๆ';
+    el('supplier').value = d.supplier||''; el('taxInvoiceNo').value=d.taxInvoiceNo||'';
+    el('poNumber').value=d.poNumber||''; el('invoiceDate').value=d.invoiceDate||'';
+    el('taxMode').value = d.taxMode || 'รวมภาษี';
+    if(d.status) el('status').value = d.status;
+    el('credit').value = d.credit || '';                   // บิลเซฟแล้วต้องเติมกลับ ไม่งั้นเซฟซ้ำ = ล้างเครดิตในชีท
+    el('billDiscount').value = d.billDiscount||0; el('netTotal').value = d.netTotal||0;
+    (d.items||[]).forEach(addItem); if(!(d.items||[]).length) addItem();
+    checkDocType(); recon(); el('saveBtn').disabled=false;
+    if(d._reparsed){ popup({ html:'<div class="pop-ic warn">🔄</div><div class="pop-t">น้องอ่านบิลให้ใหม่แล้ว</div><div class="pop-b">ข้อมูลร่างเดิมหมดเวลา เลยอ่านจากรูปเดิมให้ใหม่ค้าบ<br>ช่วยตรวจทุกช่องอีกรอบน้า</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); }
+  }
+
+  // ---------- รายการ + dropdown หน่วย (req#1) ----------
+  function addItem(it){
+    it = it||{};
+    var div=document.createElement('div'); div.className='item';
+    div.innerHTML =
+      '<button class="del" onclick="this.closest(\'.item\').remove();recon()" aria-label="ลบ">×</button>'+
+      '<label>ชื่อยา <span class="free hidden">ของแถม</span></label><input class="i-name" placeholder="ชื่อที่เขียนในบิล">'+
+      '<div class="row2"><div style="max-width:128px"><label>จำนวน</label><input class="i-qty" type="number" inputmode="decimal" placeholder="กี่หน่วย" oninput="recon()"></div>'+
+        '<div><label>หน่วย</label><div class="selwrap"><select class="i-unit" onchange="unitChanged(this)">'+UNIT_OPTS+'</select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div></div>'+
+      '<div class="i-otherwrap hidden"><label>พิมพ์หน่วยเอง</label><input class="i-other" placeholder="เช่น ซอง, หลอด"></div>'+
+      '<div class="cond i-packwrap hidden"><label class="i-packlabel">บรรจุต่อหน่วย</label><input class="i-pack" placeholder="เช่น 10 แผง / กล่อง"></div>'+
+      '<div class="row2"><div><label>ราคา/หน่วย</label><input class="i-price" type="number" inputmode="decimal" placeholder="ราคาต่อหน่วย" oninput="recon()"></div>'+
+        '<div><label>ส่วนลด</label><input class="i-disc" type="number" inputmode="decimal" placeholder="0" oninput="recon()"></div>'+
+        '<div><label>ยอดรวม</label><input class="i-total" type="number" inputmode="decimal" placeholder="0" oninput="recon()"></div></div>'+
+      '<div class="row2"><div><label>Lot</label><input class="i-lot" placeholder="เลขล็อต"></div>'+
+        '<div><label>ผลิต</label><input class="i-mfg" type="date"></div>'+
+        '<div><label>หมดอายุ</label><input class="i-exp" type="date"></div></div>';
+    el('items').appendChild(div);
+    set(div,'i-name',it.name); set(div,'i-qty',it.qty);
+    set(div,'i-pack',packNum(it.packSize)); set(div,'i-price',it.unitPrice); set(div,'i-disc',it.discount);
+    set(div,'i-total',it.lineTotal); set(div,'i-lot',it.lot); set(div,'i-mfg',it.mfg); set(div,'i-exp',it.exp);
+    applyUnit(div, it.unit);
+    recon();
+  }
+  function set(div,cls,v){ if(v!==undefined&&v!==null) div.querySelector('.'+cls).value=v; }
+  // "10's" / "1x10's" -> just the number before the pharma 's (บรรจุกี่ชิ้น = ตัวเลขล้วน) · ถ้าไม่มี 's เก็บเดิม (เช่น "10 แผง")
+  function packNum(v){ var s=String(v==null?'':v); var m=s.match(/(\d+)\s*['’]?\s*s\b/i); return m?m[1]:s; }
+
+  function applyUnit(div, u){
+    var sel=div.querySelector('.i-unit');
+    if(u && UNITS.indexOf(u)<0){ sel.value='อื่นๆ'; div.querySelector('.i-other').value=u; }
+    else if(u){ sel.value=u; }
+    unitChanged(sel);
+  }
+  function unitChanged(sel){
+    var div=sel.closest('.item'), u=sel.value, other=(u==='อื่นๆ');
+    div.querySelector('.i-otherwrap').classList.toggle('hidden', !other);
+    var showPack = other || !!CONTAINER[u];
+    div.querySelector('.i-packwrap').classList.toggle('hidden', !showPack);
+    div.querySelector('.i-packlabel').textContent = other ? 'บรรจุต่อหน่วย' : ('บรรจุกี่ชิ้น/'+u);
+    div.querySelector('.i-pack').placeholder = 'เช่น 10 แผง / ' + (other ? 'หน่วย' : u);
+  }
+
+  function collectItems(){
+    return [].map.call(document.querySelectorAll('.item'), function(d){
+      var sel=d.querySelector('.i-unit');
+      var unit = sel.value==='อื่นๆ' ? d.querySelector('.i-other').value : sel.value;
+      return { name:d.querySelector('.i-name').value, qty:num(d.querySelector('.i-qty').value),
+        unit:unit, packSize:d.querySelector('.i-pack').value,
+        unitPrice:num(d.querySelector('.i-price').value), discount:num(d.querySelector('.i-disc').value),
+        lineTotal:num(d.querySelector('.i-total').value), lot:d.querySelector('.i-lot').value,
+        mfg:d.querySelector('.i-mfg').value, exp:d.querySelector('.i-exp').value };
+    });
+  }
+
+  // ---------- reconcile (ยอดรายการ vs ยอดบิล) — high-stakes verify ----------
+  function recon(){
+    var sum=0;
+    [].forEach.call(document.querySelectorAll('.item'), function(d){
+      sum += num(d.querySelector('.i-total').value);
+      var free = num(d.querySelector('.i-price').value)===0 && num(d.querySelector('.i-qty').value)>0;
+      d.querySelector('.free').classList.toggle('hidden', !free);
+    });
+    var net=num(el('netTotal').value), disc=num(el('billDiscount').value);
+    var expect = net + disc;                              // ยอดรายการควร = สุทธิ + ส่วนลดท้ายบิล
+    var b=el('reconBanner'), diff=Math.round((sum-expect)*100)/100;
+    if(Math.abs(diff) < 0.5){ b.className='banner ok'; b.innerHTML='ยอดรายการ '+sum.toLocaleString()+' ตรงกับยอดบิลแล้ว ✓'; }
+    else { b.className='banner warn'; b.innerHTML='ยอดรายการ '+sum.toLocaleString()+' ≠ ยอดบิล '+expect.toLocaleString()+' (ต่าง '+diff.toLocaleString()+') — ตรวจอีกทีน้า'; }
+  }
+  function checkDocType(){ el('docWarn').classList.toggle('hidden', el('docType').value==='ใบกำกับภาษี'); }
+
+  // ---------- เซฟ (popup คุยกับพี่) ----------
+  function buildData(){
+    return { _billId:BILL_ID, docType:el('docType').value, supplier:el('supplier').value,
+      taxInvoiceNo:el('taxInvoiceNo').value, invoiceDate:el('invoiceDate').value, poNumber:el('poNumber').value,
+      taxMode:el('taxMode').value, billDiscount:num(el('billDiscount').value), netTotal:num(el('netTotal').value),
+      credit:el('credit').value, status:el('status').value, payStatus:PAY_STATUS,
+      _photoUrl:PHOTO_URL, items:collectItems() };
+  }
+  function save(){
+    PENDING = buildData();
+    if(PENDING.docType!=='ใบกำกับภาษี'){
+      popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">เอ๊ะ ไม่ใช่ใบกำกับภาษีนะ</div><div class="pop-b">น้องว่าใบนี้เป็น "'+esc(PENDING.docType)+'" ค้าบ<br>จะบันทึกแบบนี้เลย หรือแก้ประเภทก่อนดี?</div>',
+        buttons:[{label:'ขอแก้ก่อน',cls:'ghost',onclick:'closePopup()'},{label:'บันทึกเลย',cls:'blue',onclick:'doSave()'}] });
+    } else {
+      popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">บันทึกบิลนี้เลยไหม?</div><div class="pop-b">ตรวจชื่อยา ราคา กับยอดรวมครบแล้วนะค้าบ</div>',
+        buttons:[{label:'ขอดูอีกที',cls:'ghost',onclick:'closePopup()'},{label:'บันทึกเลย',cls:'blue',onclick:'doSave()'}] });
+    }
+  }
+  function doSave(){
+    el('saveBtn').disabled=true;
+    popup({ html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">กำลังบันทึก…</div><div class="pop-b">เก็บบิลลงระบบให้แป๊บนึงน้า</div>' });
+    api('saveGR',{data:PENDING}).then(function(r){
+      SAVED_ID = r && r.billId || '';
+      popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">'+(IS_SAVED?'แก้ไขบิลแล้ว!':'บันทึกบิลแล้ว!')+'</div><div class="pop-b">เก็บบิลของ '+esc(PENDING.supplier||'ผู้ขาย')+' เรียบร้อยแล้วค้าบ<br>ดูได้ในแท็บ "บิลทั้งหมด" เลยน้า</div>',
+        buttons:[{label:'เยี่ยมเลย',cls:'blue',onclick:'finish()'}] });
+    }).catch(function(e){
+      el('saveBtn').disabled=false;
+      popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">บันทึกไม่สำเร็จ</div><div class="pop-b">'+esc(e&&e.message||e)+'<br>ลองกดบันทึกอีกทีน้า</div>',
+        buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] });
+    });
+  }
+  function finish(){
+    try{ liff.sendMessages([{type:'text',text:'✅ บันทึกบิลแล้ว: '+SAVED_ID}]).catch(function(){}); }catch(e){}
+    goHome();
+  }
+  function goHome(){ location.href = 'index.html'; }   // same-origin จริง → ไม่ขาว/ไม่มีแบนเนอร์
+
+  // ---------- ลบทั้งบิล (ยืนยัน 2 ชั้น · รูปใน Drive ไม่ลบตาม) ----------
+  function delBill(){
+    var sup = esc(el('supplier').value||'(ไม่ระบุผู้ขาย)');
+    popup({ html:'<div class="pop-ic del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><div class="pop-t">ลบบิลนี้ทั้งใบ?</div><div class="pop-b">บิลของ '+sup+'<br>'+esc(BILL_ID)+'<br>ลบทั้งใบ + รูปย้ายไปถังขยะ Drive<br><b>กู้คืนได้จากถังขยะภายใน 30 วัน</b></div>',
+      buttons:[{label:'ไม่ลบ',cls:'ghost',onclick:'closePopup()'},{label:'ลบเลย',cls:'red',onclick:'doDelete()'}] });
+  }
+  function doDelete(){
+    popup({ html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">กำลังลบ…</div>' });
+    api('deleteBill',{billId:BILL_ID}).then(function(r){
+      if(r&&r.ok){ popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">ลบบิลแล้ว</div><div class="pop-b">'+(r.deleted?'เอาออกจากระบบเรียบร้อยค้าบ':'ทิ้งร่างที่ยังไม่ได้เซฟแล้วค้าบ')+'</div>', buttons:[{label:'กลับหน้าหลัก',cls:'blue',onclick:'goHome()'}] }); }
+      else { popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">ลบไม่สำเร็จ</div><div class="pop-b">'+esc(r&&r.error||'ลองใหม่อีกทีน้า')+'</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); }
+    }).catch(function(e){
+      popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">ลบไม่สำเร็จ</div><div class="pop-b">'+esc(e&&e.message||e)+'</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] });
+    });
+  }
+  function viewPhoto(){
+    if(!PHOTO_URL){ popup({ html:'<div class="pop-ic warn">📷</div><div class="pop-t">ยังไม่มีรูป</div><div class="pop-b">บิลนี้ไม่มีรูปต้นฉบับค้าบ</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); return; }
+    popup({ html:'<img class="pop-img" src="'+esc(PHOTO_URL)+'" alt="รูปบิล"><div class="pop-t">รูปบิลต้นฉบับ</div>', buttons:[{label:'ปิด',cls:'blue',onclick:'closePopup()'}] });
+  }
+
+  // ---------- popup ----------
+  function popup(o){
+    var btns=(o.buttons||[]).map(function(b){ return '<button class="pop-btn '+(b.cls||'ghost')+'" onclick="'+(b.onclick||'closePopup()')+'">'+b.label+'</button>'; }).join('');
+    el('popupRoot').innerHTML = '<div class="pop-bd"><div class="pop">'+o.html+(btns?'<div class="pop-row">'+btns+'</div>':'')+'</div></div>';
+  }
+  function closePopup(){ el('popupRoot').innerHTML=''; }
+</script>
+</body>
+</html>
