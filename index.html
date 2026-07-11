@@ -174,7 +174,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.1.1</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.1.2</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -366,7 +366,8 @@
   function renderChips(){
     el('chips').innerHTML = FILTERS.map(function(f){ return '<button class="chip'+(f.key===FILTER?' on':'')+'" onclick="setFilter(\''+f.key+'\')">'+f.label+'</button>'; }).join('');
   }
-  function setFilter(k){ FILTER=k; renderChips(); render(); }
+  // เปลี่ยนฟิลเตอร์ = สลับคลาส .on บนชิปเดิม (ไม่รีบิลด์ทั้งแถว → ripple เล่นจบ ไม่ชนกัน)
+  function setFilter(k){ FILTER=k; [].forEach.call(el('chips').children, function(btn,i){ if(FILTERS[i]) btn.classList.toggle('on', FILTERS[i].key===k); }); render(); }
 
   function reduceMotion(){ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
   function animateBaht(id, target){                       // ตัวเลข ฿ วิ่งขึ้นจาก 0 (count-up · ease-out)
