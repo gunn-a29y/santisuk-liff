@@ -10,10 +10,15 @@
 <style>
   :root{ --blue:#0948B4; --blue2:#1846B5; --lime:#AEE63F; --bg:#F2F5FA; --card:#fff;
     --ink:#15233B; --muted:#7E8AA0; --line:#E6EAF2; --green:#16A34A; --amber:#D97706; --red:#DC2626; }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   body{ margin:0; background:var(--bg); color:var(--ink); font-size:17px;
     font-family:'LINE Seed Sans TH','Anuphan',-apple-system,'Noto Sans Thai',sans-serif; }
   .hidden{ display:none !important; }
+  /* tap/gesture reliability (TQ-143 · Sonnet research 2026-07-12) */
+  button,[onclick],label.action{ cursor:pointer; }
+  .action,.chip,.card,.pay,.detail,.btn,.pop-btn,.qs-opt{ user-select:none; -webkit-touch-callout:none; }
+  .action:active,.card:active,.chip:active,.btn:active,.pop-btn:active,.qs-opt:active{ transform:scale(.98); opacity:.9; }
+  .vhinput{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }  /* file input off-screen (NOT display:none — iOS label→picker breaks) */
 
   /* banner */
   .banner{ background:var(--blue); color:#fff; padding:16px 18px 20px; }
@@ -47,7 +52,7 @@
 
   /* all-bills tab */
   .month{ display:inline-flex; align-items:center; gap:12px; background:#fff; border:1px solid #E2E7F0; color:#2C3A52; font-size:17px; padding:12px 18px; border-radius:999px; margin-bottom:16px; }
-  .month button{ border:0; background:none; color:#7B879B; font-size:20px; padding:0; line-height:1; font-family:inherit; }
+  .month button{ border:0; background:none; color:#7B879B; font-size:20px; padding:0; line-height:1; font-family:inherit; min-width:44px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; }
   .sum{ display:flex; gap:11px; margin-bottom:18px; }
   .s2{ flex:1; background:#fff; border:1px solid var(--line); border-radius:16px; padding:15px 16px; }
   .s2 .l{ font-size:15px; color:#6B7689; }
@@ -161,7 +166,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.5</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.6</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -204,8 +209,8 @@
   </div>
 </div>
 
-<input type="file" id="fileIn" accept="image/*" capture="environment" class="hidden">
-<input type="file" id="galleryIn" accept="image/*" class="hidden">
+<input type="file" id="fileIn" accept="image/*" capture="environment" class="vhinput">
+<input type="file" id="galleryIn" accept="image/*" class="vhinput">
 <canvas id="canvas" class="hidden"></canvas>
 <div id="popupRoot"></div>
 
@@ -276,6 +281,7 @@
   // Pages = origin จริง (ไม่ใช่ HtmlService iframe) → liff.init ทำงานได้ → ต้องรอ init เพื่อเอา ID token ก่อนเรียก api
   if(deepParam('page') === 'edit'){ location.replace('edit.html?bill=' + encodeURIComponent(deepParam('bill'))); }
   if(deepParam('tab') === 'manage'){ showTab('manage'); if(deepParam('cam') === '1') startCamera(); }
+  document.body.addEventListener('touchstart', function(){}, {passive:true});  // เปิดให้ :active ทำงานบน iOS
   boot();
   async function boot(){
     try{ await liff.init({ liffId: LIFF_ID }); }
