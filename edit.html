@@ -327,8 +327,12 @@
     });
   }
   function viewPhoto(){
-    if(!PHOTO_URL){ popup({ html:'<div class="pop-ic warn">📷</div><div class="pop-t">ยังไม่มีรูป</div><div class="pop-b">บิลนี้ไม่มีรูปต้นฉบับค้าบ</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); return; }
-    popup({ html:'<img class="pop-img" src="'+esc(PHOTO_URL)+'" alt="รูปบิล"><div class="pop-t">รูปบิลต้นฉบับ</div>', buttons:[{label:'ปิด',cls:'blue',onclick:'closePopup()'}] });
+    if(!BILL_ID){ popup({ html:'<div class="pop-ic warn">📷</div><div class="pop-t">ยังไม่มีรูป</div><div class="pop-b">บิลนี้ยังไม่มีเลขรับสินค้า เลยไม่มีรูปค้าบ</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); return; }
+    popup({ html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">กำลังเปิดรูป…</div>' });
+    api('getPhoto',{billId:BILL_ID}).then(function(r){          // เสิร์ฟผ่าน backend (auth) · รูป private
+      if(r&&r.dataUrl){ popup({ html:'<img class="pop-img" src="'+r.dataUrl+'" alt="รูปบิล"><div class="pop-t">รูปบิลต้นฉบับ</div>', buttons:[{label:'ปิด',cls:'blue',onclick:'closePopup()'}] }); }
+      else { popup({ html:'<div class="pop-ic warn">📷</div><div class="pop-t">ยังไม่มีรูป</div><div class="pop-b">บิลนี้ไม่มีรูปต้นฉบับในระบบค้าบ</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); }
+    }).catch(function(e){ popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">เปิดรูปไม่สำเร็จ</div><div class="pop-b">'+esc(e&&e.message||e)+'</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); });
   }
 
   // ---------- popup ----------

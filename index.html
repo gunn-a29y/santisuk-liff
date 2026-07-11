@@ -17,7 +17,8 @@
   /* tap/gesture reliability (TQ-143 · Sonnet research 2026-07-12) */
   button,[onclick],label.action{ cursor:pointer; }
   .action,.chip,.card,.pay,.detail,.btn,.pop-btn,.qs-opt{ user-select:none; -webkit-touch-callout:none; }
-  .action:active,.card:active,.chip:active,.btn:active,.pop-btn:active,.qs-opt:active{ transform:scale(.98); opacity:.9; }
+  .action:active,.btn:active,.pop-btn:active,.qs-opt:active{ transform:scale(.97); opacity:.9; }
+  .card:active,.chip:active{ opacity:.82; }  /* การ์ด/ชิป = จางลงเฉย ๆ ไม่ย่อ (กันหดดูแปลก) */
   .rippleable{ position:relative; overflow:hidden; }
   .ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.18; transform:scale(0); animation:rip .5s ease-out forwards; pointer-events:none; }
   @keyframes rip{ to{ transform:scale(2.3); opacity:0; } }
@@ -169,7 +170,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.8</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.9</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -362,7 +363,7 @@
   function billCard(b){
     var sc = STATUS_CLASS[b.status] || 'todo';
     var paid = b.payStatus==='จ่ายแล้ว';
-    var thumb = b.photoUrl ? '<div class="thumb" style="background-image:url('+esc(b.photoUrl)+')"></div>' : '<div class="thumb">'+RECEIPT_ICON+'</div>';
+    var thumb = '<div class="thumb">'+RECEIPT_ICON+'</div>';   // รูปจริงเปิดในหน้าแก้ไข (ผ่าน auth) · ลิสต์โชว์ไอคอน
     return '<div class="card" onclick="openQS(\''+esc(b.billId)+'\')" style="cursor:pointer">'+
       '<div class="strip '+sc+'">'+
         '<div><span class="tag"><span class="dot"></span> '+esc(b.status||'ยังไม่ทำ')+'</span>'+
