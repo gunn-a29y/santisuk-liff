@@ -296,13 +296,13 @@
   // ---------- ลบทั้งบิล (ยืนยัน 2 ชั้น · รูปใน Drive ไม่ลบตาม) ----------
   function delBill(){
     var sup = esc(el('supplier').value||'(ไม่ระบุผู้ขาย)');
-    popup({ html:'<div class="pop-ic del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><div class="pop-t">ลบบิลนี้ทั้งใบ?</div><div class="pop-b">บิลของ '+sup+'<br>'+esc(BILL_ID)+'<br>ลบทั้งใบ + รูปย้ายไปถังขยะ Drive<br><b>กู้คืนได้จากถังขยะภายใน 30 วัน</b></div>',
+    popup({ html:'<div class="pop-ic del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div><div class="pop-t">ลบบิลนี้?</div><div class="pop-b">บิลของ '+sup+'<br>'+esc(BILL_ID)+'<br>จะเอาออกจากรายการ<br><b>ยังเก็บไว้ในระบบ กู้คืนได้ถ้าลบผิด</b></div>',
       buttons:[{label:'ไม่ลบ',cls:'ghost',onclick:'closePopup()'},{label:'ลบเลย',cls:'red',onclick:'doDelete()'}] });
   }
   function doDelete(){
     popup({ html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">กำลังลบ…</div>' });
     api('deleteBill',{billId:BILL_ID}).then(function(r){
-      if(r&&r.ok){ popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">ลบบิลแล้ว</div><div class="pop-b">'+(r.deleted?'เอาออกจากระบบเรียบร้อยค้าบ':'ทิ้งร่างที่ยังไม่ได้เซฟแล้วค้าบ')+'</div>', buttons:[{label:'กลับหน้าหลัก',cls:'blue',onclick:'goHome()'}] }); }
+      if(r&&r.ok){ popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">เอาบิลออกแล้ว</div><div class="pop-b">'+(r.deleted?'เอาออกจากรายการแล้วค้าบ · ยังเก็บไว้กู้ได้ถ้าลบผิด':'ทิ้งร่างที่ยังไม่ได้เซฟแล้วค้าบ')+'</div>', buttons:[{label:'กลับหน้าหลัก',cls:'blue',onclick:'goHome()'}] }); }
       else { popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">ลบไม่สำเร็จ</div><div class="pop-b">'+esc(r&&r.error||'ลองใหม่อีกทีน้า')+'</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] }); }
     }).catch(function(e){
       popup({ html:'<div class="pop-ic warn">⚠️</div><div class="pop-t">ลบไม่สำเร็จ</div><div class="pop-b">'+esc(e&&e.message||e)+'</div>', buttons:[{label:'โอเค',cls:'blue',onclick:'closePopup()'}] });
