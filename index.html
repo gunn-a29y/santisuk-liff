@@ -83,6 +83,10 @@
   .pay.paid{ color:var(--green); } .pay.due{ color:var(--amber); }
   .detail{ font-size:16px; color:var(--muted); display:inline-flex; align-items:center; gap:3px; background:none; border:0; font-family:inherit; }
   .empty{ text-align:center; color:var(--muted); font-size:16px; padding:34px 10px; line-height:1.6; }
+  /* skeleton shimmer (ตอนโหลดบิล) */
+  .skel{ height:118px; border-radius:18px; margin-bottom:12px; border:1px solid #E9EDF4; background:#fff; position:relative; overflow:hidden; }
+  .skel::after{ content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(9,72,180,.07),transparent); transform:translateX(-100%); animation:shim 1.2s infinite; }
+  @keyframes shim{ to{ transform:translateX(100%); } }
 
   /* camera overlay */
   .cam{ position:fixed; inset:0; background:#0E1525; z-index:50; display:flex; flex-direction:column; }
@@ -170,7 +174,7 @@
       <div class="atext"><div class="atitle">เลือกจากคลังรูป</div><div class="asub">มีรูปบิลถ่ายไว้แล้ว เลือกมาได้เลย</div></div>
       <span class="achev">›</span>
     </label>
-    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.0.9</div>
+    <div style="text-align:center;color:#B9C3D6;font-size:12px;margin-top:4px">v1.1.0</div>
   </div>
 
   <!-- แท็บ บิลทั้งหมด -->
@@ -233,6 +237,7 @@
     { key:'fix',   label:'ต้องแก้' }
   ];
   var DATA = { bills:[], total:0 }, MONTHS = [], MIDX = 0, FILTER = 'all', stream = null;
+  var SKEL = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>', SWIPED = false;
   function el(id){ return document.getElementById(id); }
   function baht(n){ return '฿' + (Number(n)||0).toLocaleString('th-TH'); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -297,6 +302,32 @@
     t.appendChild(s); setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 500);
     try{ if(navigator.vibrate) navigator.vibrate(8); }catch(_){}
   }, true);
+  // ปัดการ์ด: ขวา=สลับจ่ายเงิน · ซ้าย=เปิดเมนู (delegated บน #list · แยก tap/scroll ด้วย threshold)
+  (function(){
+    var listEl=el('list'), sx=0, sy=0, card=null, dx=0, swiping=false, moved=false;
+    listEl.addEventListener('touchstart', function(e){
+      var c=e.target.closest && e.target.closest('.card'); if(!c) return;
+      card=c; sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; swiping=false; moved=false; card.style.transition='';
+    }, {passive:true});
+    listEl.addEventListener('touchmove', function(e){
+      if(!card) return;
+      var ddx=e.touches[0].clientX-sx, ddy=e.touches[0].clientY-sy;
+      if(!swiping){ if(Math.abs(ddx)>12 && Math.abs(ddx)>Math.abs(ddy)*1.4){ swiping=true; } else if(Math.abs(ddy)>12){ card=null; return; } }
+      if(swiping){ moved=true; dx=Math.max(-130,Math.min(130,ddx)); card.style.transform='translateX('+dx+'px)';
+        card.style.boxShadow = dx>0 ? '0 0 0 2px var(--green) inset' : (dx<0 ? '0 0 0 2px var(--blue) inset' : ''); e.preventDefault(); }
+    }, {passive:false});
+    function endSwipe(){
+      if(!card) return; var c=card, d=dx; card=null;
+      c.style.transition='transform .2s, box-shadow .2s'; c.style.transform=''; c.style.boxShadow='';
+      if(moved && Math.abs(d)>75){
+        SWIPED=true; setTimeout(function(){ SWIPED=false; }, 400);
+        var id=c.getAttribute('data-bill');
+        if(d>0) swipeSetPay(id); else openQS(id);
+        try{ if(navigator.vibrate) navigator.vibrate(10); }catch(_){}
+      }
+    }
+    listEl.addEventListener('touchend', endSwipe); listEl.addEventListener('touchcancel', endSwipe);
+  })();
   boot();
   async function boot(){
     try{ await liff.init({ liffId: LIFF_ID }); }
@@ -327,8 +358,8 @@
   function moveMonth(dir){ if(!MONTHS.length) return; MIDX = Math.min(MONTHS.length-1, Math.max(0, MIDX+dir)); loadMonth(); }
   function loadMonth(){
     el('monthLabel').textContent = thMonth(MONTHS[MIDX]);
-    el('list').innerHTML = '<div class="empty">กำลังโหลด…</div>';
-    api('getMonth',{month:MONTHS[MIDX]}).then(function(d){ DATA=d; render(); }).catch(fail);
+    el('list').innerHTML = SKEL;
+    api('getMonth',{month:MONTHS[MIDX]}).then(function(d){ DATA=d; render(true); }).catch(fail);
   }
   function thMonth(ym){ if(!ym) return '—'; var p=String(ym).split('-'); if(isNaN(+p[0])||!p[1]) return String(ym); var m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return (m[+p[1]]||p[1])+' '+(+p[0]+543); }
 
@@ -337,15 +368,22 @@
   }
   function setFilter(k){ FILTER=k; renderChips(); render(); }
 
-  function setSummary(allSum, allCnt, dueSum, dueCnt){
-    el('sumAll').textContent=baht(allSum); el('cntAll').textContent=allCnt+' บิล';
-    el('sumDue').textContent=baht(dueSum); el('cntDue').textContent=dueCnt+' บิล';
+  function reduceMotion(){ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+  function animateBaht(id, target){                       // ตัวเลข ฿ วิ่งขึ้นจาก 0 (count-up · ease-out)
+    var node=el(id), dur=550, t0=null;
+    function step(ts){ if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/dur), e=1-Math.pow(1-p,3); node.textContent=baht(Math.round(target*e)); if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
   }
-  function render(){
+  function setSummary(allSum, allCnt, dueSum, dueCnt, animate){
+    if(animate && !reduceMotion()){ animateBaht('sumAll',allSum); animateBaht('sumDue',dueSum); }
+    else { el('sumAll').textContent=baht(allSum); el('sumDue').textContent=baht(dueSum); }
+    el('cntAll').textContent=allCnt+' บิล'; el('cntDue').textContent=dueCnt+' บิล';
+  }
+  function render(animate){
     var bills = DATA.bills||[];
     var dueSum=0, dueCnt=0;
     bills.forEach(function(b){ if(b.payStatus==='ค้างชำระ'){ dueSum+=Number(b.netTotal)||0; dueCnt++; } });
-    setSummary(DATA.total||0, bills.length, dueSum, dueCnt);
+    setSummary(DATA.total||0, bills.length, dueSum, dueCnt, animate);
     el('greet').textContent = dueCnt ? ('เดือนนี้ มีบิลรอจัดการ '+countTodo(bills)+' ใบ') : 'เดือนนี้เคลียร์หมดแล้ว เก่งมากค้าบ~';
     var shown = bills.filter(passFilter);
     el('listHead').textContent = 'บิลทั้งหมด · '+bills.length+' รายการ';
@@ -364,7 +402,7 @@
     var sc = STATUS_CLASS[b.status] || 'todo';
     var paid = b.payStatus==='จ่ายแล้ว';
     var thumb = '<div class="thumb">'+RECEIPT_ICON+'</div>';   // รูปจริงเปิดในหน้าแก้ไข (ผ่าน auth) · ลิสต์โชว์ไอคอน
-    return '<div class="card" onclick="openQS(\''+esc(b.billId)+'\')" style="cursor:pointer">'+
+    return '<div class="card" data-bill="'+esc(b.billId)+'" onclick="cardTap(this)" style="cursor:pointer">'+
       '<div class="strip '+sc+'">'+
         '<div><span class="tag"><span class="dot"></span> '+esc(b.status||'ยังไม่ทำ')+'</span>'+
           '<div class="sup">'+esc(b.supplier||'(ไม่ระบุผู้ขาย)')+'</div>'+
@@ -377,6 +415,16 @@
     '</div>';
   }
   function openBill(id){ location.href = 'edit.html?bill=' + encodeURIComponent(id); }
+  function cardTap(node){ if(SWIPED) return; openQS(node.getAttribute('data-bill')); }   // แตะการ์ด (ข้ามถ้าเพิ่งปัด)
+  // ปัดขวา = สลับจ่ายแล้ว/ค้างชำระ (ไม่ทำลายข้อมูล) · optimistic + rollback ถ้า fail
+  function swipeSetPay(id){
+    var b=null, arr=DATA.bills||[]; for(var i=0;i<arr.length;i++){ if(arr[i].billId===id){ b=arr[i]; break; } }
+    if(!b) return;
+    var old=b.payStatus, nv=(old==='จ่ายแล้ว')?'ค้างชำระ':'จ่ายแล้ว';
+    b.payStatus=nv; render();
+    api('setStatus',{billId:id,field:'payStatus',value:nv}).then(function(r){ if(!(r&&r.ok)){ b.payStatus=old; render(); errPopup('เปลี่ยนสถานะไม่สำเร็จ ลองใหม่น้า'); } })
+      .catch(function(e){ b.payStatus=old; render(); errPopup('เปลี่ยนสถานะไม่สำเร็จ: '+(e&&e.message||e)); });
+  }
 
   // ---------- quick-status bottom-sheet (เปลี่ยนสถานะ/จ่ายเงินจากลิสต์ · เรียก apiSetStatus) ----------
   var QS_ID = null;

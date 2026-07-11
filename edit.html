@@ -21,6 +21,7 @@
   .rippleable{ position:relative; overflow:hidden; }
   .ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.18; transform:scale(0); animation:rip .5s ease-out forwards; pointer-events:none; }
   @keyframes rip{ to{ transform:scale(2.3); opacity:0; } }
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }  /* confetti */
   .top{ display:flex; align-items:center; justify-content:space-between; background:var(--blue); color:#fff; padding:14px 16px; position:sticky; top:0; z-index:5; }
   .top .t{ font-size:19px; font-weight:700; }
   .top button{ background:none; border:0; color:#fff; font-family:inherit; }
@@ -142,6 +143,19 @@
   function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function opt(id,arr){ el(id).innerHTML = arr.map(function(v){return '<option>'+v+'</option>';}).join(''); }
+  // 🎉 confetti ฉลองตอนเซฟสำเร็จ (DOM-based · เวิร์กบน iOS · ข้าม ถ้า reduce-motion)
+  function confetti(){
+    try{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+    var colors=['#0948B4','#AEE63F','#16A34A','#D97706','#e8453c','#1846B5'];
+    var box=document.createElement('div'); box.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:100;overflow:hidden';
+    document.body.appendChild(box);
+    for(var i=0;i<60;i++){
+      var p=document.createElement('i'), sz=6+Math.random()*8;
+      p.style.cssText='position:absolute;top:-12px;left:'+(Math.random()*100)+'%;width:'+sz+'px;height:'+(sz*0.55)+'px;background:'+colors[i%colors.length]+';opacity:'+(0.7+Math.random()*0.3)+';border-radius:2px;transform:rotate('+(Math.random()*360)+'deg);animation:fall '+(1.3+Math.random()*1.1)+'s '+(Math.random()*0.35)+'s cubic-bezier(.2,.6,.4,1) forwards';
+      box.appendChild(p);
+    }
+    setTimeout(function(){ if(box.parentNode) box.parentNode.removeChild(box); }, 2800);
+  }
   // เรียก backend (Apps Script /exec) — fetch text/plain เลี่ยง CORS preflight + redirect follow (302) + แนบ ID token
   function api(action, args){
     var payload = { action: action, idToken: ID_TOKEN };
@@ -297,6 +311,7 @@
     popup({ html:'<div class="pop-ic load"><div class="spin"></div></div><div class="pop-t">กำลังบันทึก…</div><div class="pop-b">เก็บบิลลงระบบให้แป๊บนึงน้า</div>' });
     api('saveGR',{data:PENDING}).then(function(r){
       SAVED_ID = r && r.billId || '';
+      confetti();
       popup({ html:'<div class="pop-ic ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="pop-t">'+(IS_SAVED?'แก้ไขบิลแล้ว!':'บันทึกบิลแล้ว!')+'</div><div class="pop-b">เก็บบิลของ '+esc(PENDING.supplier||'ผู้ขาย')+' เรียบร้อยแล้วค้าบ<br>ดูได้ในแท็บ "บิลทั้งหมด" เลยน้า</div>',
         buttons:[{label:'เยี่ยมเลย',cls:'blue',onclick:'finish()'}] });
     }).catch(function(e){
